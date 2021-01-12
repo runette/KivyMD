@@ -471,7 +471,10 @@ Builder.load_string(
 
         # Disabled line.
         Color:
-            rgba: self.line_color_normal if root.mode == "line" else (0, 0, 0, 0)
+            rgba:
+                (self.line_color_normal \
+                if self.line_color_normal else self.theme_cls.divider_color) \
+                if root.mode == "line" else (0, 0, 0, 0)
         Line:
             points: self.x, self.y + dp(16), self.x + self.width, self.y + dp(16)
             width: 1
@@ -497,7 +500,7 @@ Builder.load_string(
 
         # Texture of right Icon.
         Color:
-            rgba: self.icon_right_color
+            rgba: self.icon_right_color if self.focus else self._current_hint_text_color
         Rectangle:
             texture: self._lbl_icon_right.texture
             size: self._lbl_icon_right.texture_size if self.icon_right else (0, 0)
@@ -538,7 +541,9 @@ Builder.load_string(
 
         # "rectangle" mode
         Color:
-            rgba: self._current_line_color if not self.text_color else self.text_color
+            rgba:
+                (self._current_line_color if not self.text_color else self.text_color) \
+                if self.focus else self._current_hint_text_color
         Line:
             width: dp(1) if root.mode == "rectangle" else dp(0.00001)
             points:
@@ -635,8 +640,9 @@ Builder.load_string(
             pos: self.pos
             size: self.size
 
+    canvas.after:
         Color:
-            rgba: self.line_color
+            rgba: self.line_color if self.focus else self.theme_cls.disabled_hint_text_color
         Line:
             points: self.pos[0] , self.pos[1], self.pos[0] + self.size[0], self.pos[1]
         Line:
@@ -648,7 +654,9 @@ Builder.load_string(
 
         # Texture of left Icon.
         Color:
-            rgba: self.icon_left_color
+            rgba:
+                self.icon_left_color \
+                if self.focus else self.theme_cls.disabled_hint_text_color
         Rectangle:
             texture: self._lbl_icon_left.texture
             size:
@@ -660,7 +668,9 @@ Builder.load_string(
 
         # Texture of right Icon.
         Color:
-            rgba: self.icon_right_color
+            rgba:
+                self.icon_right_color \
+                if self.focus else self.theme_cls.disabled_hint_text_color
         Rectangle:
             texture: self._lbl_icon_right.texture
             size:
