@@ -39,7 +39,7 @@ from kivy.properties import (
 from kivy.utils import get_color_from_hex
 
 from kivymd import images_path
-from kivymd.color_definitions import colors, hue, palette
+from kivymd.color_definitions import colors, hue, palette, text_colors
 from kivymd.material_resources import DEVICE_IOS, DEVICE_TYPE
 
 
@@ -917,6 +917,16 @@ class ThemeManager(EventDispatcher):
         MainApp().run()
 
     """
+
+    def primary_text(self, hue=None):
+        if not hue:
+            hue = self.primary_hue
+        return get_color_from_hex(text_colors[self.primary_palette][hue])
+
+    def accent_text(self, hue=None):
+        if not hue:
+            hue = self.accent_hue
+        return get_color_from_hex(text_colors[self.accent_palette][hue])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
