@@ -19,6 +19,133 @@ Control material properties
 
 The main application class inherited from the `MDApp` class has the :attr:`theme_cls`
 attribute, with which you control the material properties of your application.
+
+Changing the theme colors
+-------------------------
+
+The standard theme_cls is designed to provide the standard themes and colors as
+defined by Material Design.
+
+We do not recommend that you change this.
+
+However, if you do need to change the standard colors, for instance to meet branding
+guidelines, you can do this by overloading the `color_definitions.py` object.
+
+* Create a custom color defintion object. This should have the format of the `colors
+<https://kivymd.readthedocs.io/en/latest/themes/color-definitions/#module-kivymd.color_definitions>`_
+object in `color_definitions.py` and contain definitions for at least the primary color, the accent
+color and the Light and Dark backgrounds. *Note* - your custom colors *must* use the names of the
+`existing colors as defined in the palette
+<https://kivymd.readthedocs.io/en/latest/themes/color-definitions/#kivymd.color_definitions.palette>`_
+You can have `Blue` but you cannot have `NavyBlue`. An example is shown in the code snippet
+below.
+
+* Add the custom theme to the MDApp as shown in the following snippet.
+
+.. code-block:: python
+
+    from kivy.lang import Builder
+    from kivy.uix.floatlayout import FloatLayout
+    from kivy.properties import ObjectProperty
+
+    from kivymd.app import MDApp
+    from kivymd.uix.tab import MDTabsBase
+    from kivymd.icon_definitions import md_icons
+
+    colors = {
+        "Teal": {
+            "50": "e4f8f9",
+            "100": "bdedf0",
+            "200": "97e2e8",
+            "300": "79d5de",
+            "400": "6dcbd6",
+            "500": "6ac2cf",
+            "600": "63b2bc",
+            "700": "5b9ca3",
+            "800": "54888c",
+            "900": "486363",
+            "A100": "bdedf0",
+            "A200": "97e2e8",
+            "A400": "6dcbd6",
+            "A700": "5b9ca3",
+        },
+        "Blue": {
+            "50": "e3f3f8",
+            "100": "b9e1ee",
+            "200": "91cee3",
+            "300": "72bad6",
+            "400": "62acce",
+            "500": "589fc6",
+            "600": "5191b8",
+            "700": "487fa5",
+            "800": "426f91",
+            "900": "35506d",
+            "A100": "b9e1ee",
+            "A200": "91cee3",
+            "A400": "62acce",
+            "A700": "487fa5",
+        },
+        "Light": {
+            "StatusBar": "E0E0E0",
+            "AppBar": "F5F5F5",
+            "Background": "FAFAFA",
+            "CardsDialogs": "FFFFFF",
+            "FlatButtonDown": "cccccc",
+        },
+        "Dark": {
+            "StatusBar": "000000",
+            "AppBar": "212121",
+            "Background": "303030",
+            "CardsDialogs": "424242",
+            "FlatButtonDown": "999999",
+        }
+    }
+
+
+    KV = '''
+
+    BoxLayout:
+        orientation: "vertical"
+        MDToolbar:
+            title: "Example Tabs"
+        MDTabs:
+            id: tabs
+
+
+    <Tab>:
+
+        MDIconButton:
+            id: icon
+            icon: root.icon
+            user_font_size: "48sp"
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+    class Tab(FloatLayout, MDTabsBase):
+        '''Class implementing content for a tab.'''
+        icon = ObjectProperty()
+
+
+    class Example(MDApp):
+        icons = list(md_icons.keys())[15:30]
+
+        def build(self):
+            self.theme_cls.colors = colors
+            self.theme_cls.primary_palette = "Blue"
+            self.theme_cls.accent_palette = "Teal"
+            return Builder.load_string(KV)
+
+        def on_start(self):
+            for name_tab in self.icons:
+                tab = Tab(text="This is " + name_tab, icon=name_tab)
+                self.root.ids.tabs.add_widget(tab)
+
+    Example().run()
+```
+
+This will change the theme colors to your custom defintion. In all other respects,
+the theming stays as documented.
+
+
 """
 
 from kivy.app import App
