@@ -834,7 +834,7 @@ class MDTabsBar(ThemableBehavior, RectangularElevationBehavior, MDBoxLayout):
 
     def tab_bar_autoscroll(self, target, step):
         # automatic scroll animation of the tab bar.
-        bound_left = self.center_x
+        bound_left = self.center_x - self.pos[0]
         bound_right = self.layout.width - bound_left
         dt = target.center_x - bound_left
         sx, sy = self.scrollview.convert_distance_to_scroll(dt, 0)
@@ -1230,8 +1230,9 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
         self.dispatch("on_slide_progress", args)
 
     def _update_indicator(self, current_tab_label):
-        if not current_tab_label:
-            current_tab_label = self.tab_bar.layout.children[-1]
-        self.tab_bar.update_indicator(
-            current_tab_label.x, current_tab_label.width
-        )
+        if current_tab_label == self.carousel.current_slide.tab_label:
+            if not current_tab_label:
+                current_tab_label = self.tab_bar.layout.children[-1]
+            self.tab_bar.update_indicator(
+                current_tab_label.x, current_tab_label.width
+            )
