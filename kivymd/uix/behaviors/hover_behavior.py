@@ -123,6 +123,29 @@ class HoverBehavior(object):
         if self.hovered == inside:
             # We have already done what was needed
             return
+        if inside:
+            children = Window.children
+            for child in children:
+                # For each top level widget - check if it is a Menu. If a menu is visible
+                # it will be here
+                if type(child).__name__ == "MDDropdownMenu" or type(child).__name__ == "MyModal":
+                    inside = False
+                    break
+            widget = self
+            while True:
+                # Walk up the Widget tree from the target Widget
+                parent = widget.parent
+                try:
+                    # See if the mouse point collides with the parent
+                    pinside = parent.collide_point(*pos)
+                except:
+                    # The collide_point will error when you reach the root Window
+                    break
+                if not pinside:
+                    inside = False
+                    break
+                # Iterate upwards
+                widget = parent
         self.border_point = pos
         self.hovered = inside
         if inside:
