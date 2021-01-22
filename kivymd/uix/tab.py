@@ -564,7 +564,9 @@ Builder.load_string(
         size_hint: 1, None
         elevation: root.elevation
         height: root.tab_bar_height
-        md_bg_color: self.theme_cls.primary_color if not root.background_color else root.background_color
+        md_bg_color:
+            self.theme_cls.primary_color \
+            if not root.background_color else root.background_color
 
         MDTabsScrollView:
             id: scrollview
@@ -579,14 +581,23 @@ Builder.load_string(
 
                 canvas.before:
                     Color:
-                        rgba: root.theme_cls.accent_color if not root.indicator_color else root.indicator_color
+                        rgba:
+                            root.theme_cls.accent_color \
+                            if not root.indicator_color else root.indicator_color
                     RoundedRectangle:
                         pos: self.pos
                         size: 0, root.tab_indicator_height
                         radius: [0,]
                     Line:
-                        rounded_rectangle: [root._line_x, self.pos[1], root._line_width, root._line_height, root._line_radius]
                         width: dp(2)
+                        rounded_rectangle:
+                            [\
+                            root._line_x, \
+                            self.pos[1], \
+                            root._line_width, \
+                            root._line_height, \
+                            root._line_radius \
+                            ]
 """
 )
 
@@ -1104,6 +1115,10 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
             if instance_tab.text == name_tab:
                 self.tab_bar.parent.carousel.load_slide(instance_tab)
                 break
+        for tab_label in self.get_tab_list():
+            if name_tab == tab_label.text:
+                self.ids.scrollview.scroll_to(tab_label)
+                break
 
     def get_tab_list(self):
         """Returns a list of tab objects."""
@@ -1223,7 +1238,7 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
         if self.carousel.current_slide:
             self._update_indicator(self.carousel.current_slide.tab_label)
 
-    def _carousel_bind(self, i):
+    def _carousel_bind(self, interval):
         self.carousel.bind(on_slide_progress=self._on_slide_progress)
 
     def _on_slide_progress(self, *args):
