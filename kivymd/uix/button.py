@@ -457,9 +457,8 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
-from kivy.utils import get_hex_from_color
 
-from kivymd.color_definitions import colors, text_colors
+from kivymd.color_definitions import text_colors
 from kivymd.font_definitions import theme_font_styles
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.behaviors import (
@@ -1409,6 +1408,21 @@ class MDFloatingActionButton(
     def set_size(self, interval):
         self.width = "56dp"
         self.height = "56dp"
+
+    def on_touch_down(self, touch):
+        super(MDFloatingActionButton, self).on_touch_down(touch)
+        if self.collide_point(touch.x, touch.y):
+            return True
+
+    def on_touch_move(self, touch):
+        super(MDFloatingActionButton, self).on_touch_move(touch)
+        if self.collide_point(touch.x, touch.y):
+            return True
+
+    def on_touch_up(self, touch):
+        super(MDFloatingActionButton, self).on_touch_up(touch)
+        if self.collide_point(touch.x, touch.y):
+            return True
 
 
 class MDTextButton(ButtonBehavior, MDLabel):
