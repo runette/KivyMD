@@ -480,7 +480,6 @@ from kivy.properties import (
 )
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.behaviors import ToggleButtonBehavior
-from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.widget import Widget
 from kivy.utils import boundary
@@ -495,6 +494,7 @@ from kivymd.uix.behaviors import (
 )
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.carousel import MDCarousel
+from kivymd.uix.label import MDLabel
 
 Builder.load_string(
     """
@@ -502,13 +502,22 @@ Builder.load_string(
 
 
 <MDTabsLabel>
+    _set_start_tab: False
     size_hint: None, 1
-    halign: 'center'
-    padding: '12dp', 0
-    group: 'tabs'
+    halign: "center"
+    padding: "12dp", 0
+    group: "tabs"
     font: root.font_name
     allow_no_selection: False
     markup: True
+    on_width:
+        if not self._set_start_tab: \
+        self.tab_bar.parent._update_indicator( \
+        self.tab_bar.parent.carousel.current_slide.tab_label); \
+        self._set_start_tab = True
+    on_tab_bar:
+        self.text_size = (None, None) \
+        if self.tab_bar.parent.allow_stretch else (self.width, None)
     on_ref_press:
         self.tab_bar.parent.dispatch(\
         "on_ref_press",
@@ -517,9 +526,8 @@ Builder.load_string(
         self.tab_bar, \
         self.tab_bar.parent.carousel)
     color:
-        self.text_color_active if self.state == 'down' \
+        self.text_color_active if self.state == "down" \
         else self.text_color_normal
-    on_width: root.tab_bar.parent._update_indicator(self)
 
 
 <MDTabsScrollView>
@@ -534,7 +542,7 @@ Builder.load_string(
 <MDTabs>
     carousel: carousel
     tab_bar: tab_bar
-    anchor_y: 'top'
+    anchor_y: "top"
     background_palette: "Primary"
 
     _line_x: 0
@@ -606,7 +614,7 @@ class MDTabsException(Exception):
     pass
 
 
-class MDTabsLabel(ToggleButtonBehavior, RectangularRippleBehavior, Label):
+class MDTabsLabel(ToggleButtonBehavior, RectangularRippleBehavior, MDLabel):
     """This class it represent the label of each tab."""
 
     text_color_normal = ColorProperty((0, 0, 0, 0))
@@ -627,7 +635,7 @@ class MDTabsLabel(ToggleButtonBehavior, RectangularRippleBehavior, Label):
 
     def on_texture(self, widget, texture):
         # just save the minimum width of the label based of the content
-        if texture:
+        if texture and int(self.width) != int(texture.width):
             self.width = texture.width
             self.min_space = self.width
 
@@ -1163,11 +1171,22 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
         if len(self.tab_bar.layout.children) == 1:
             return
 
-        self.tab_bar.layout.remove_widget(widget)
+        # Search object next tab.
+        next_tab = None
+        for i, tab in enumerate(self.tab_bar.layout.children):
+            if tab == widget:
+                next_tab = self.tab_bar.layout.children[i - 1]
+                break
 
-        for tab in self.carousel.slides:
-            if tab.text == widget.text:
-                self.carousel.remove_widget(tab)
+        self.tab_bar.layout.remove_widget(widget)
+        # After deleting the tab, it updates the indicator width
+        # on the next tab.
+        if next_tab:
+            self._update_indicator(next_tab)
+
+        for slide in self.carousel.slides:
+            if slide.text == widget.text:
+                self.carousel.remove_widget(slide)
                 break
 
     def on_slide_progress(self, *args):
@@ -1245,9 +1264,11 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
         self.dispatch("on_slide_progress", args)
 
     def _update_indicator(self, current_tab_label):
-        if current_tab_label == self.carousel.current_slide.tab_label:
-            if not current_tab_label:
-                current_tab_label = self.tab_bar.layout.children[-1]
+        def update_indicator(interval):
             self.tab_bar.update_indicator(
                 current_tab_label.x, current_tab_label.width
             )
+
+        if not current_tab_label:
+            current_tab_label = self.tab_bar.layout.children[-1]
+        Clock.schedule_once(update_indicator)

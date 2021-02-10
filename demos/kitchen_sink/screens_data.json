@@ -328,5 +328,15 @@
         "object": 0,
         "icon": "dock-left",
         "more_info": "https://kivymd.readthedocs.io/en/latest/components/navigation-drawer/"
+    },
+    "Elevation": {
+        "kv_string": "elevation",
+        "Import": "from libs.baseclass.elevation import KitchenSinkElevationScreen",
+        "Factory": "KitchenSinkElevationScreen()",
+        "name_screen": "elevation",
+        "source_code": "Components-Elevation.txt",
+        "object": 0,
+        "icon": "layers",
+        "more_info": "https://kivymd.readthedocs.io/en/latest/behaviors/elevation/"
     }
 }

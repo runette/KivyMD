@@ -428,6 +428,7 @@ __all__ = (
     "MDFillRoundFlatButton",
     "MDFillRoundFlatIconButton",
     "MDTextButton",
+    "MDFloatingActionButtonSpeedDial",
 )
 
 from kivy.animation import Animation
@@ -729,6 +730,65 @@ Builder.load_string(
     adaptive_size: True
     color: root.theme_cls.primary_color if not root.color else root.color
     opacity: 1
+
+
+<BaseFloatingBottomButton>
+    theme_text_color: "Custom"
+    md_bg_color: self.theme_cls.primary_color
+
+    canvas.before:
+        Color:
+            rgba:
+                self.theme_cls.primary_color \
+                if not self._bg_color else self._bg_color
+        RoundedRectangle:
+            pos:
+                (self.x - self._canvas_width + dp(1.5)) + self._padding_right / 2, \
+                self.y - self._padding_right / 2 + dp(1.5)
+            size:
+                self.width + self._canvas_width - dp(3), \
+                self.height + self._padding_right - dp(3)
+            radius: [self.height / 2]
+
+
+<BaseFloatingRootButton>
+    theme_text_color: "Custom"
+    md_bg_color: self.theme_cls.primary_color
+
+    canvas.before:
+        PushMatrix
+        Rotate:
+            angle: self._angle
+            axis: (0, 0, 1)
+            origin: self.center
+    canvas.after:
+        PopMatrix
+
+
+<BaseFloatingLabel>
+    size_hint: None, None
+    padding: "8dp", "4dp", "8dp", "4dp"
+    height: label.texture_size[1] + self.padding[1] * 2
+    width: label.texture_size[0] + self.padding[0] * 2
+    elevation: 10
+
+    canvas:
+        Color:
+            rgba:
+                self.theme_cls.primary_color \
+                if not root.bg_color else root.bg_color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [5]
+
+    Label:
+        id: label
+        markup: True
+        text: root.text
+        size_hint: None, None
+        size: self.texture_size
+        color: root.theme_cls.text_color if not root.text_color else root.text_color
 """
 )
 
@@ -995,8 +1055,7 @@ class BaseElevationButton(CommonElevationBehavior, BaseButton):
     def on_elevation(self, instance, value):
         self._elevation_normal = self.elevation
         self._elevation_raised = self.elevation
-        self._anim_raised = Animation(_elevation=value + 2, d=0.5)
-        self._anim_raised.bind(on_progress=self._do_anim_raised)
+        self._anim_raised = Animation(_elevation=value + 6, d=0.1)
         self._update_elevation(instance, value)
 
     def on_disabled(self, instance, value):
@@ -1035,11 +1094,6 @@ class BaseElevationButton(CommonElevationBehavior, BaseButton):
         self._elevation = self._elevation_raised
         self._elevation_normal = self._elevation_raised
         self._update_shadow(self, self._elevation)
-
-    def _do_anim_raised(self, animation, instance, value):
-        self._elevation += value
-        if self._elevation < self._elevation_raised + 2:
-            self._update_shadow(instance, self._elevation)
 
 
 class BaseCircularElevationButton(
@@ -1484,6 +1538,10 @@ class BaseFloatingBottomButton(MDFloatingActionButton, MDTooltip):
     _canvas_width = NumericProperty(0)
     _padding_right = NumericProperty(0)
     _bg_color = ColorProperty(None)
+
+    def set_size(self, interval):
+        self.width = "46dp"
+        self.height = "46dp"
 
 
 class BaseFloatingLabel(
