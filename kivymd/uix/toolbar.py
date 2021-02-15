@@ -237,6 +237,25 @@ Custom color
 .. image:: https://github.com/HeaTTheatR/KivyMD-data/raw/master/gallery/kivymddoc/toolbar-11.png
     :align: center
 
+MDToolbar with Menus
+--------------------
+
+A Toolbar without Menus is not particularly useful. However, the
+:class:`~MDDropdownMenu` works well with the standard
+:class:`~kivymd.uix.toolbar.MDToolbar` to provide this functionality,
+as shown in the image below.
+
+.. seealso::
+
+    See the
+    `MDDropdownMenu documentation
+    <https://kivymd.readthedocs.io/en/latest/components/menu/#menu-with-mdtoolbar>`_
+    for details of how to implement this.
+
+.. image:: https://github.com/HeaTTheatR/KivyMD-data/raw/master/gallery/kivymddoc/toolbar-menu.gif
+    :align: center
+
+
 Tooltips
 --------
 
@@ -322,6 +341,7 @@ Builder.load_string(
     canvas.after:
         PopMatrix
 
+
 <NotchedBox>
     size_hint_y: None
     height: root.theme_cls.standard_increment
@@ -332,28 +352,37 @@ Builder.load_string(
     canvas:
         Color:
             rgba:
-                (root.theme_cls.primary_color if root.md_bg_color == [0, 0, 0, 0] else root.md_bg_color) \
+                ( \
+                root.theme_cls.primary_color \
+                if root.md_bg_color == [0, 0, 0, 0] \
+                else root.md_bg_color \
+                ) \
                 if root.type == "top" else \
-                (root.theme_cls.primary_color if root.parent.md_bg_color == [0, 0, 0, 0] else root.parent.md_bg_color)
+                ( \
+                root.theme_cls.primary_color \
+                if root.parent.md_bg_color == [0, 0, 0, 0] \
+                else root.parent.md_bg_color \
+                )
         Mesh:
             vertices: root._vertices_left
             indices: root._indices_left
             mode: "triangle_fan"
-
         Mesh:
             vertices: root._vertices_right
             indices: root._indices_right
             mode: "triangle_fan"
-
         RoundedRectangle:
             pos: root._rectangle_left_pos
             size: root._rectangle_left_width, root._rounded_rectangle_height
-            radius: [0,] if root.mode=="normal" else [0,root.notch_radius*root._rounding_percentage,0,0]
-
+            radius:
+                [0,] if root.mode == "normal" \
+                else [0, root.notch_radius * root._rounding_percentage, 0, 0]
         RoundedRectangle:
             pos: root._rectangle_right_pos
             size: root._rectangle_right_width, root._rounded_rectangle_height
-            radius: [0,] if root.mode=="normal" else [root.notch_radius*root._rounding_percentage,0,0,0]
+            radius:
+                [0,] if root.mode == "normal" \
+                else [root.notch_radius * root._rounding_percentage, 0, 0, 0]
 
 
 <MDToolbar>
@@ -362,7 +391,7 @@ Builder.load_string(
         id: left_actions
         orientation: "horizontal"
         size_hint_x: None
-        padding: [0, (self.height - dp(48))/2]
+        padding: [0, (self.height - dp(48)) / 2]
 
     BoxLayout:
         padding: dp(12), 0
@@ -403,20 +432,6 @@ class NotchedBox(
     SpecificBackgroundColorBehavior,
     BoxLayout,
 ):
-    _indices_right = ListProperty()
-    _vertices_right = ListProperty()
-    _indices_left = ListProperty()
-    _vertices_left = ListProperty()
-    notch_radius = NumericProperty()
-    notch_center_x = NumericProperty("100dp")
-    _rounded_rectangle_height = NumericProperty("6dp")
-    _total_angle = NumericProperty(180)
-    _rectangle_left_pos = ListProperty([0, 0])
-    _rectangle_left_width = NumericProperty()
-    _rectangle_right_pos = ListProperty([0, 0])
-    _rectangle_right_width = NumericProperty()
-    _rounding_percentage = NumericProperty(0.15)
-
     elevation = NumericProperty(6)
     """
     Elevation value.
@@ -424,6 +439,21 @@ class NotchedBox(
     :attr:`elevation` is an :class:`~kivy.properties.NumericProperty`
     and defaults to `6`.
     """
+
+    notch_radius = NumericProperty()
+    notch_center_x = NumericProperty("100dp")
+
+    _indices_right = ListProperty()
+    _vertices_right = ListProperty()
+    _indices_left = ListProperty()
+    _vertices_left = ListProperty()
+    _rounded_rectangle_height = NumericProperty("6dp")
+    _total_angle = NumericProperty(180)
+    _rectangle_left_pos = ListProperty([0, 0])
+    _rectangle_left_width = NumericProperty()
+    _rectangle_right_pos = ListProperty([0, 0])
+    _rectangle_right_width = NumericProperty()
+    _rounding_percentage = NumericProperty(0.15)
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -666,16 +696,6 @@ class MDToolbar(NotchedBox):
         self.action_button = MDActionBottomAppBarButton()
         super().__init__(**kwargs)
         self.register_event_type("on_action_button")
-        self.action_button.bind(center_x=self.setter("notch_center_x"))
-        self.action_button.bind(
-            on_release=lambda x: self.dispatch("on_action_button")
-        )
-        self.action_button.x = Window.width / 2 - self.action_button.width / 2
-        self.action_button.y = (
-            (self.center[1] - self.height / 2)
-            + self.theme_cls.standard_increment / 2
-            + self._shift
-        )
         if not self.icon_color:
             self.icon_color = self.theme_cls.primary_color
         Window.bind(on_resize=self._on_resize)
@@ -689,7 +709,22 @@ class MDToolbar(NotchedBox):
             lambda x: self.on_right_action_items(0, self.right_action_items)
         )
         Clock.schedule_once(lambda x: self.set_md_bg_color(0, self.md_bg_color))
-        Clock.schedule_once(lambda x: self.on_mode(None, self.mode))
+
+    def on_type(self, instance, value):
+        if value == "bottom":
+            self.action_button.bind(center_x=self.setter("notch_center_x"))
+            self.action_button.bind(
+                on_release=lambda x: self.dispatch("on_action_button")
+            )
+            self.action_button.x = (
+                Window.width / 2 - self.action_button.width / 2
+            )
+            self.action_button.y = (
+                (self.center[1] - self.height / 2)
+                + self.theme_cls.standard_increment / 2
+                + self._shift
+            )
+            self.on_mode(None, self.mode)
 
     def on_action_button(self, *args):
         pass
@@ -756,6 +791,9 @@ class MDToolbar(NotchedBox):
         self.action_button.md_bg_color = value
 
     def on_mode(self, instance, value):
+        if self.type == "top":
+            return
+
         def set_button_pos(*args):
             self.action_button.x = x
             self.action_button.y = y - self._rounded_rectangle_height / 2
@@ -811,12 +849,10 @@ class MDToolbar(NotchedBox):
         anim.start(self)
 
     def remove_shadow(self):
-        self.action_button._hard_shadow_size = (0, 0)
-        self.action_button._soft_shadow_size = (0, 0)
+        self.action_button._elevation = 0
 
     def set_shadow(self, *args):
-        self.action_button._hard_shadow_size = (dp(112), dp(112))
-        self.action_button._soft_shadow_size = (dp(112), dp(112))
+        self.action_button._elevation = self.action_button.elevation
 
     def _on_resize(self, instance, width, height):
         if self.mode == "center":
