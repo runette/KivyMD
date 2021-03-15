@@ -509,6 +509,7 @@ from kivy.properties import (
     BooleanProperty,
     BoundedNumericProperty,
     ColorProperty,
+    ListProperty,
     NumericProperty,
     ObjectProperty,
     OptionProperty,
@@ -524,7 +525,7 @@ from kivymd.font_definitions import fonts, theme_font_styles
 from kivymd.icon_definitions import md_icons
 from kivymd.theming import ThemableBehavior
 from kivymd.uix.behaviors import (
-    RectangularElevationBehavior,
+    FakeRectangularElevationBehavior,
     RectangularRippleBehavior,
     SpecificBackgroundColorBehavior,
 )
@@ -609,6 +610,7 @@ Builder.load_string(
 
     MDTabsBar:
         id: tab_bar
+        padding: root.tab_padding
         carousel: carousel
         scrollview: scrollview
         layout: layout
@@ -629,9 +631,14 @@ Builder.load_string(
                 rows: 1
                 size_hint_y: 1
                 adaptive_width: True
-                on_size:
-                    root._update_padding(layout)
+                on_size: root._update_padding(layout)
+
                 canvas.before:
+                    Color:
+                        rgba: root.underline_color
+                    Line:
+                        width: dp(2)
+                        rectangle: [0, 0, layout.width, dp(2)]
                     Color:
                         rgba:
                             root.theme_cls.accent_color \
@@ -977,7 +984,9 @@ class MDTabsScrollView(ScrollView):
             _update(self.effect_y, scroll_y)
 
 
-class MDTabsBar(ThemableBehavior, RectangularElevationBehavior, MDBoxLayout):
+class MDTabsBar(
+    ThemableBehavior, FakeRectangularElevationBehavior, MDBoxLayout
+):
     """
     This class is just a boxlayout that contains the scroll view for tabs.
     It is also responsible for resizing the tab shortcut when necessary.
@@ -1134,6 +1143,14 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
     and defaults to `'48dp'`.
     """
 
+    tab_padding = ListProperty([0, 0, 0, 0])
+    """
+    Padding of the tab bar.
+
+    :attr:`tab_padding` is an :class:`~kivy.properties.ListProperty`
+    and defaults to `[0, 0, 0, 0]`.
+    """
+
     tab_indicator_anim = BooleanProperty(False)
     """
     Tab indicator animation. If you want use animation set it to ``True``.
@@ -1216,6 +1233,14 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
 
     :attr:`background_color` is an :class:`~kivy.properties.ColorProperty`
     and defaults to `None`.
+    """
+
+    underline_color = ColorProperty([0, 0, 0, 0])
+    """
+    Underline color of tabs in ``rgba`` format.
+
+    :attr:`underline_color` is an :class:`~kivy.properties.ColorProperty`
+    and defaults to `[0, 0, 0, 0]`.
     """
 
     text_color_normal = ColorProperty(None)
@@ -1415,6 +1440,7 @@ class MDTabs(ThemableBehavior, SpecificBackgroundColorBehavior, AnchorLayout):
                 widget.tab_label.ripple_duration_in_slow = self.ripple_duration
                 widget.tab_label.group = str(self)
                 widget.tab_label.tab_bar = self.tab_bar
+                widget.tab_label.font_name = self.font_name
                 widget.tab_label.text_color_normal = (
                     self.text_color_normal
                     if self.text_color_normal
